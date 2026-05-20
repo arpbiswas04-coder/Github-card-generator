@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Dev Card Generator | Premium</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        :root {
+            --bg-deep: #0b1020;
+            --bg-dark: #0d1117;
+            --bg-card: rgba(255, 255, 255, 0.05);
+            --accent-primary: #7c3aed;
+            --accent-secondary: #06b6d4;
+            --text-main: #f9fafb;
+            --text-muted: #9ca3af;
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --neon-glow: 0 0 15px rgba(124, 58, 237, 0.4);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: radial-gradient(circle at 20% 30%, #1e1b4b 0%, var(--bg-deep) 50%, var(--bg-dark) 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            padding: 20px;
+        }
+
+        /* Background Blobs */
+        .blob {
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(124, 58, 237, 0.15) 0%, transparent 70%);
+            filter: blur(80px);
+            z-index: -1;
+            pointer-events: none;
+        }
+        .blob-1 { top: -150px; left: -150px; }
+        .blob-2 { bottom: -150px; right: -150px; background: radial-gradient(circle, rgba(6, 182, 212, 0.1) 0%, transparent 70%); }
+
+        .app-container {
+            width: 100%;
+            max-width: 600px;
+            animation: appEntrance 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes appEntrance {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3.5rem;
+        }
+
+        h1 {
+            font-size: 3.2rem;
+            font-weight: 800;
+            margin-bottom: 0.8rem;
+            background: linear-gradient(135deg, #fff 30%, #7c3aed, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -2px;
+            line-height: 1.1;
+        }
+
+        .subheading {
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            font-weight: 400;
+        }
+
+        .glass-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 1.8rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 1.1rem 1.4rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            color: white;
+            font-size: 1.05rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            outline: none;
+        }
+
+        input:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.2), var(--neon-glow);
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        button.generate-btn {
+            width: 100%;
+            padding: 1.1rem;
+            border: none;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--accent-primary), #8b5cf6, var(--accent-secondary));
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 20px -5px rgba(124, 58, 237, 0.4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+        }
+
+        button.generate-btn:hover:not(:disabled) {
+            transform: translateY(-5px) scale(1.01);
+            filter: brightness(1.15);
+            box-shadow: 0 20px 30px -10px rgba(124, 58, 237, 0.6);
+        }
+
+        button.generate-btn:active:not(:disabled) {
+            transform: scale(0.97);
+        }
+
+        button.generate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            filter: grayscale(0.5);
+        }
+
+        /* Result Area */
+        .result-container {
+            margin-top: 3rem;
+            animation: slideUpFade 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-wrapper {
+            display: flex;
+            justify-content: center;
+            padding: 1.5rem;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--glass-border);
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+        
+        .card-wrapper:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        /* Skeleton Loader */
+        .skeleton {
+            width: 350px;
+            height: 420px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .skeleton::after {
+            content: "";
+            position: absolute;
+            top: 0; right: 0; bottom: 0; left: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+            transform: translateX(-100%);
+            animation: shimmer 1.8s infinite;
+        }
+
+        @keyframes shimmer {
+            100% { transform: translateX(100%); }
+        }
+
+        .sk-circle { width: 64px; height: 64px; border-radius: 50%; background: rgba(255, 255, 255, 0.08); margin-bottom: 24px; }
+        .sk-line { height: 14px; background: rgba(255, 255, 255, 0.08); border-radius: 6px; margin-bottom: 16px; }
+        .sk-line.short { width: 45%; }
+        .sk-line.medium { width: 75%; }
+
+        /* Share Button */
+        .copy-btn {
+            margin-top: 2rem;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            padding: 1rem;
+            border-radius: 16px;
+            color: var(--text-main);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: var(--text-muted);
+            transform: scale(1.02);
+        }
+
+        /* Toast Message */
+        .toast {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%) translateY(120px);
+            background: #10b981;
+            color: white;
+            padding: 14px 28px;
+            border-radius: 50px;
+            font-weight: 700;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+
+        /* Error States */
+        .error-box {
+            margin-top: 1.5rem;
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            padding: 1.2rem;
+            border-radius: 16px;
+            color: #f87171;
+            font-weight: 500;
+            text-align: center;
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.1);
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: var(--bg-deep); }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; border: 2px solid var(--bg-deep); }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        @media (max-width: 480px) {
+            h1 { font-size: 2.4rem; }
+            .glass-card { padding: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        function App() {
+            const [username, setUsername] = useState('');
+            const [cardData, setCardData] = useState(null);
+            const [loading, setLoading] = useState(false);
+            const [error, setError] = useState(null);
+            const [showToast, setShowToast] = useState(false);
+
+            const handleGenerate = async () => {
+                if (!username.trim()) return;
+                
+                setLoading(true);
+                setError(null);
+                setCardData(null);
+
+                // Detect if we are in Docker or Local file mode
+                let backendBaseUrl = '${BACKEND_URL}';
+                if (backendBaseUrl.startsWith('$') || !backendBaseUrl) {
+                    backendBaseUrl = 'http://localhost:8080';
+                }
+
+                try {
+                    const response = await fetch('/generate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username: username.trim() })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.status === 'success') {
+                        setCardData(data);
+                    } else {
+                        setError(data.detail || data.message || "User not found. Try a valid GitHub username.");
+                    }
+                } catch (err) {
+                    setError("Backend connection failed. Please ensure your Python server is running on port 8080.");
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const copyLink = () => {
+                if (!cardData) return;
+                // Get absolute URL for sharing
+                const fullUrl = window.location.origin.includes('localhost') 
+                    ? `http://localhost:8080${cardData.card_url}` 
+                    : `${window.location.origin}${cardData.card_url}`;
+                
+                navigator.clipboard.writeText(fullUrl);
+                setShowToast(true);
+                setTimeout(() => setShowToast(false), 3000);
+            };
+
+            return (
+                <div className="app-container">
+                    <header>
+                        <h1>GitHub Dev Card</h1>
+                        <p className="subheading">Enter any public GitHub username to generate a premium profile card</p>
+                    </header>
+
+                    <div className="glass-card">
+                        <div className="input-group">
+                            <input 
+                                type="text" 
+                                placeholder="GitHub username (e.g. torvalds)..." 
+                                value={username} 
+                                onChange={(e) => setUsername(e.target.value)}
+                                onKeyPress={(e) => e.key === 'Enter' && handleGenerate()}
+                                disabled={loading}
+                            />
+                        </div>
+                        <button 
+                            className="generate-btn" 
+                            onClick={handleGenerate} 
+                            disabled={loading || !username}
+                        >
+                            {loading ? (
+                                <span>Generating Card...</span>
+                            ) : (
+                                <>
+                                    <span>Generate Card</span>
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polyline></svg>
+                                </>
+                            )}
+                        </button>
+
+                        {error && <div className="error-box">{error}</div>}
+                    </div>
+
+                    {loading && (
+                        <div className="result-container">
+                            <div className="card-wrapper">
+                                <div className="skeleton">
+                                    <div className="sk-circle"></div>
+                                    <div className="sk-line medium"></div>
+                                    <div className="sk-line"></div>
+                                    <div className="sk-line short"></div>
+                                    <div style={{marginTop: '48px'}}>
+                                        <div className="sk-line medium"></div>
+                                        <div className="sk-line"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {cardData && (
+                        <div className="result-container">
+                            <div className="card-wrapper" dangerouslySetInnerHTML={{ __html: cardData.card_html }} />
+                            
+                            <button className="copy-btn" onClick={copyLink}>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                                Copy Share Link
+                            </button>
+                        </div>
+                    )}
+
+                    <div className={`toast ${showToast ? 'show' : ''}`}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        Link copied to clipboard!
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

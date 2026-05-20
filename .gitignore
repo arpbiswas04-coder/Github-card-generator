@@ -1,0 +1,42 @@
+# Environment variables
+.env
+backend/.env
+*.env
+.env.*
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Node / Frontend dependencies (if any)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Generated developer cards
+backend/static/cards/*.html
+!backend/static/cards/.gitkeep
+
+# IDE / Editor settings
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+*~
+
+# OS specific files
+.DS_Store
+Thumbs.db
+desktop.ini
